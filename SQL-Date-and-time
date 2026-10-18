@@ -1,0 +1,192 @@
+SQL Date and Time Data Types: TIMESTAMP, TIME, DATE and EXTRACT() with Examples
+
+Date and time data are important in SQL because many database records contain information about when an event happened. For example, a payment may have a transaction date, an order may have an order date, and a system may record the exact time of an activity.
+
+SQL provides different data types and functions to store, retrieve, and extract date and time information. In this blog, we will understand "TIMESTAMP", "TIME", "DATE", "TIMESTAMPTZ", and the "EXTRACT()" function with practical examples.
+
+1. TIMESTAMP
+
+The "TIMESTAMP" data type, also called "TIMESTAMP WITHOUT TIME ZONE", stores a date and time without time-zone information. PostgreSQL does not use a time zone to interpret or convert values of this type.
+
+It is useful when the recorded date and time are intended to be treated as a local or time-zone-independent value.
+
+Example format:
+
+"YYYY-MM-DD HH:MI:SS"
+
+Example value: "2026-10-18 14:30:45"
+
+Here:
+
+- "YYYY" represents the year.
+- "MM" represents the month.
+- "DD" represents the day.
+- "HH" represents the hour.
+- "MI" represents the minute.
+- "SS" represents the second.
+
+2. TIME
+
+The "TIME" data type, also called "TIME WITHOUT TIME ZONE", stores only a time of day, without a date or time-zone information.
+
+Example format:
+
+"HH:MI:SS"
+
+Example value: "14:30:45"
+
+It can be used when we need to store a time such as a shop's opening time or a scheduled meeting time. PostgreSQL also supports "TIME WITH TIME ZONE", but it is rarely needed because a time without a date does not provide enough context for most time-zone conversions.
+
+3. DATE
+
+The "DATE" data type stores only date information, without a time or time-zone component.
+
+Example format:
+
+"YYYY-MM-DD"
+
+Example value: "2026-10-18"
+
+It is useful for storing information such as order dates, joining dates, and birth dates.
+
+4. YEAR
+
+PostgreSQL does not have a separate "YEAR" data type. Year information can be extracted from a date, timestamp, or time-zone-aware timestamp using the "EXTRACT()" function.
+
+For example, in PostgreSQL:
+
+SELECT EXTRACT(YEAR FROM DATE '2026-10-18');
+
+Output: "2026"
+
+"EXTRACT()" returns a numeric value; for the "YEAR" field, the result is typically displayed as "2026".
+
+5. TIMESTAMPTZ
+
+In PostgreSQL, "TIMESTAMPTZ" is an alias for "TIMESTAMP WITH TIME ZONE".
+
+Despite its name, PostgreSQL does not store a time-zone name or offset with each value. It interprets an input that includes a time zone, converts the instant to UTC internally, and displays the value in the current session's time zone. If the input has no time-zone indication, PostgreSQL interprets it using the session time zone.
+
+For example:
+
+SET TIME ZONE 'UTC';
+
+SELECT TIMESTAMPTZ '2026-10-18 14:30:45+05:30';
+
+The value represents the same instant as "2026-10-18 09:00:45+00", and its displayed form changes when the session time zone changes.
+
+"TIMESTAMPTZ" is useful for recording instants in time, such as payments, orders, and system events that may be viewed from different time zones. It does not preserve the original time-zone name or offset supplied in the input.
+
+6. Date and Time Operations in PostgreSQL
+
+PostgreSQL provides several expressions and functions to retrieve the current date and time or check the session time zone.
+
+A. Check the current time zone
+
+SHOW TIME ZONE;
+
+This displays the time zone configured for the current PostgreSQL session.
+
+B. Get the current date and time
+
+SELECT NOW();
+
+"NOW()" returns the current date and time as a "TIMESTAMPTZ" value. It represents the start time of the current transaction, so repeated calls within the same transaction return the same value.
+
+C. Get the current date and time as text
+
+SELECT TIMEOFDAY();
+
+"TIMEOFDAY()" returns the current date and time as text, including the time-zone offset. Unlike "NOW()", it returns "text", and its value is based on the current clock time rather than the start of the current transaction.
+
+D. Get the current time
+
+SELECT CURRENT_TIME;
+
+"CURRENT_TIME" is a SQL special value, not a function call. It returns the current time with time-zone information as a "TIME WITH TIME ZONE" value. Like "NOW()", it is fixed at the start of the current transaction. A precision can be specified, for example, "CURRENT_TIME(0)".
+
+E. Get the current date
+
+SELECT CURRENT_DATE;
+
+"CURRENT_DATE" is a SQL special value that returns the current date in the session time zone. It does not include a time component and is fixed at the start of the current transaction.
+
+7. EXTRACT() Function
+
+The "EXTRACT()" function extracts a specified field from a date, time, timestamp, or interval value.
+
+It can retrieve information such as the year, month, day, week, day of the week, day of the year, or quarter. The result is a numeric value, and the available fields depend on the source type.
+
+Syntax:
+
+SELECT EXTRACT(field FROM source);
+
+Here:
+
+- "field" specifies which part of the date or time we want to extract.
+- "source" is the date, time, timestamp, or interval value from which the information is extracted.
+
+Examples of EXTRACT()
+
+A. Extract the month
+
+SELECT EXTRACT(MONTH FROM DATE '2026-10-18');
+
+Output: "10"
+
+B. Extract the day
+
+SELECT EXTRACT(DAY FROM DATE '2026-10-18');
+
+Output: "18"
+
+For a date or timestamp, "DAY" means the day of the month. For an interval, it represents the day component of the interval.
+
+C. Extract the year
+
+SELECT EXTRACT(YEAR FROM DATE '2026-10-18');
+
+Output: "2026"
+
+D. Extract the day of the week
+
+SELECT EXTRACT(DOW FROM DATE '2026-10-18');
+
+This returns the day-of-week number, where Sunday is "0" and Saturday is "6" in PostgreSQL.
+
+E. Extract the day of the year
+
+SELECT EXTRACT(DOY FROM DATE '2026-10-18');
+
+This returns the day number within the year, from "1" to "365" or "366" in a leap year.
+
+F. Extract the week
+
+SELECT EXTRACT(WEEK FROM DATE '2026-10-18');
+
+This returns the ISO week number, from "1" to "53". ISO weeks begin on Monday, and the first ISO week is the week containing January 4. Consequently, the ISO week year can differ from the calendar year; use "EXTRACT(ISOYEAR FROM source)" when that distinction matters.
+
+G. Extract the quarter
+
+SELECT EXTRACT(QUARTER FROM DATE '2026-10-18');
+
+Output: "4"
+
+A year has four quarters:
+
+- Quarter 1: January–March
+- Quarter 2: April–June
+- Quarter 3: July–September
+- Quarter 4: October–December
+
+Conclusion
+
+Date and time data types help us store different kinds of temporal information. "DATE" stores a date, "TIME" stores a time of day, and "TIMESTAMP" stores a date and time without time-zone handling. In PostgreSQL, "TIMESTAMPTZ" represents an instant and displays it according to the session time zone; it does not store a time-zone name or offset with the value.
+
+The "EXTRACT()" function helps us retrieve specific numeric fields from dates, times, timestamps, and intervals, such as the year, month, day, week, and quarter. These concepts are useful in Data Analytics when working with order dates, payment records, monthly trends, and time-based reports.
+
+Understanding these concepts helps us work with date and time data more effectively and write SQL queries for real-world analysis.
+
+By Prashansa
+
+Learning Data Analytics by understanding concepts, building projects, and sharing what I learn.
